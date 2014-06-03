@@ -1,6 +1,6 @@
 {
   "name": "subscriptionmanager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Manage subscriptions to Redis Pub/Sub channels",
   "main": "index.js",
   "scripts": {
