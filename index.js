@@ -23,11 +23,11 @@ var SubscriptionManager = module.exports = function(redis, options) {
   self.redis = redis;
 
   self.redis.on('subscribe', function(channel, count) {
-    debug('subscribe %s (%s channel)', channel, count);
+    debug('redis subscribe %s (%s channel)', channel, count);
   });
   
   self.redis.on('unsubscribe', function(channel, count) {
-    debug('unsubscribe %s (%s channel)', channel, count);
+    debug('redis unsubscribe %s (%s channel)', channel, count);
   });
 
   self.redis.on('message', function(channel, message) {
