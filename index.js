@@ -49,11 +49,10 @@ util.inherits(SubscriptionManager, events.EventEmitter);
  *
  * Allows us to perform a one-to-many mapping of channels to things.
  *
- * @param {string} id      Unique id of the thing
  * @param {Object} thing   Thing that is subscribing
  * @param {String} channel Channel to subscribe to
  */
-SubscriptionManager.prototype.subscribe = function(id, thing, channel) {
+SubscriptionManager.prototype.subscribe = function(thing, channel) {
   channel = this.prefix + channel;
 
   if (!this.subscriptions[channel]) {
@@ -61,24 +60,24 @@ SubscriptionManager.prototype.subscribe = function(id, thing, channel) {
     this.redis.subscribe(channel);
   }
 
-  this.subscriptions[channel].push({id: id, thing: thing});
+  this.subscriptions[channel].push(thing);
 };
 
 /**
- * Unsubscribe WebSocket to channel
+ * Unsubscribe thing to channel
  *
  * Allows us to remove a thing from a list of subscribed things.
  * 
- * @param {string} id      Unique id of the thing
+ * @param {string} thing   Thing that is unsubscribing
  * @param {String} channel Channel to subscribe to
  */
-SubscriptionManager.prototype.unsubscribe = function(id, channel) {
+SubscriptionManager.prototype.unsubscribe = function(thing, channel) {
   channel = this.prefix + channel;
   var subscribers = this.subscriptions[channel];
 
   for (var i=subscribers.length-1; i>=0; i--) {
     var subscriber = subscribers[i];
-    if (subscriber.id === id) {
+    if (subscriber === thing) {
       subscribers.splice(i, 1);
       break;
     }
@@ -100,8 +99,6 @@ SubscriptionManager.prototype.unsubscribe = function(id, channel) {
 SubscriptionManager.prototype._getSubscribers = function(channel) {
   var subscribers = this.subscriptions[channel];
   if (!subscribers) return [];
-
-  subscribers = subscribers.map(function(i) { return i.thing; });
   return subscribers;
 };
 
