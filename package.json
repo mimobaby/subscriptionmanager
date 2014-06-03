@@ -4,11 +4,11 @@
   "description": "Manage subscriptions to Redis Pub/Sub channels",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "./node_modules/.bin/mocha"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mimobaby/SubscriptionManager.git"
+    "url": "https://github.com/mimobaby/subscriptionmanager.git"
   },
   "keywords": [
     "redis",
@@ -22,9 +22,9 @@
   "author": "Carson Darling",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mimobaby/SubscriptionManager/issues"
+    "url": "https://github.com/mimobaby/subscriptionmanager/issues"
   },
-  "homepage": "https://github.com/mimobaby/SubscriptionManager",
+  "homepage": "https://github.com/mimobaby/subscriptionmanager",
   "dependencies": {
     "debug": "^0.8.1"
   },

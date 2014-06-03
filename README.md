@@ -36,7 +36,6 @@ subMan.getChannels(); // -> ['myChannel']
 
 // Unsubscribe a client from a channel
 subMan.unsubscribe(myClient, 'myChannel');
-
 ```
 
 ## API
@@ -109,7 +108,6 @@ DEBUG=SubscriptionManager node file.js
 
 export DEBUG=SubscriptionManager
 node file.js
-
 ````
 
 ## To Do
