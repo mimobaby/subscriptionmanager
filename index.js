@@ -1,4 +1,6 @@
-var debug = require('debug');
+var util = require('util');
+var events = require('events');
+var debug = require('debug')('SubscriptionManager');
 var assert = require('assert');
 
 /**
@@ -7,18 +9,37 @@ var assert = require('assert');
  */
 
 var SubscriptionManager = module.exports = function(redis, options) {
+  var self = this;
   assert(redis, 'You must specify a Redis-compatible instance.');
-  options = options || {};
-
-  this.redis = redis;
-  this.subscriptions = {};
-  this.prefix = '';
-
-  if (options.prefix) {
-    this.prefix = options.prefix + ':';
-  }
   
+  // Option parsing
+  options = options || {};
+  self.prefix = '';
+  if (options.prefix) {
+    self.prefix = options.prefix + ':';
+  }
+
+  self.subscriptions = {};
+  self.redis = redis;
+
+  self.redis.on('subscribe', function(channel, count) {
+    debug('subscribe %s (%s remaining)', channel, count);
+  });
+  
+  self.redis.on('unsubscribe', function(channel, count) {
+    debug('unsubscribe %s (%s remaining)', channel, count);
+  });
+
+  self.redis.on('message', function(channel, message) {
+    debug('message on %s', channel);
+
+    // unsub checking
+
+    self.emit('message', channel, self.getSubscribers(channel), message);
+  });
 };
+
+util.inherits(SubscriptionManager, events.EventEmitter);
 
 
 /**

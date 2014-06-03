@@ -122,9 +122,16 @@ describe('SubscriptionManager', function() {
     it('should unsubscribe from one channel, but not all', function(done) {
       s = new SubMan(r);
       s.subscribe('obj1', obj1, 'test1');
-      s.subscribe('obj2', obj2, 'test2');
+      s.subscribe('obj1', obj1, 'test2');
 
       s.unsubscribe('obj1', 'test1');
+
+      var subs1 = s.subscriptions.test1;
+      (typeof subs1).should.eql('undefined');
+      
+      var subs2 = s.subscriptions.test2.map(function(i) { return i.thing; });
+      subs2.length.should.eql(1);
+      subs2.indexOf(obj1).should.be.above(-1);
 
       checkChannelList(['test2'], done);
     });
@@ -182,6 +189,70 @@ describe('SubscriptionManager', function() {
       var c = s.getChannels();
 
       checkChannelList(c, done);
+    });
+
+  });
+
+
+  describe('#on(\'message\')', function() {
+
+    it('should emit messages', function(done) {
+      s = new SubMan(r);
+      s.subscribe('obj1', obj1, 'test');
+      s.subscribe('obj2', obj2, 'test');
+
+      s.on('message', function(channel, subs, message) {
+
+        channel.should.eql('test');
+        subs.length.should.eql(2);
+        subs.indexOf(obj1).should.be.above(-1);
+        subs.indexOf(obj2).should.be.above(-1);
+        message.should.eql('message');
+
+        done();
+      });
+
+      setTimeout(function() {
+        redisClient.publish('test', 'message');
+      }, 10);
+    });
+
+    it('should not emit unsolicited messages', function(done) {
+      s = new SubMan(r);
+
+      var exited = false;
+      s.on('message', function(channel, subs, message) {
+        if (!exited) return done(new Error('Should not get here'));
+      });
+
+      setTimeout(function() {
+        redisClient.publish('test2', 'message');
+      }, 10);
+
+      setTimeout(function() {
+        exited = true;
+        done();
+      }, 100);
+    });
+
+    it('should not emit messages after unsubscribe', function(done) {
+      s = new SubMan(r);
+      s.subscribe('obj1', obj1, 'test');
+      s.unsubscribe('obj1', 'test');
+
+      var exited = false;
+      s.on('message', function(channel, subs, message) {
+        if (!exited) return done(new Error('Should not get here'));
+      });
+
+      setTimeout(function() {
+        redisClient.publish('test', 'message');
+      }, 10);
+
+      setTimeout(function() {
+        exited = true;
+        done();
+      }, 100);
     });
 
   });
