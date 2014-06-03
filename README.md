@@ -2,7 +2,7 @@
 
 A handle little tool for subscribing objects to Redis Pub/Sub channels.
 
-`npm install SubscriptionManager`
+`npm install subscriptionmanager`
 
 The original idea was to connect WebSocket clients to Pub/Sub channels with events being fired by background processes. For example, notify a client when a background process finishes encoding a video. Or, notify a client when their web-connected factory produces another item.
 
