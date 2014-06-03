@@ -266,9 +266,13 @@ describe('SubscriptionManager', function() {
  */
 
 function checkChannelList(channels, done) {
+  channels = channels.sort(function (a,b) { return a > b; });
   setTimeout(function() {
     redisClient.pubsub('channels', function(err, c) {
       if (err) return done(err);
+
+      c = c.sort(function (a,b) { return a > b; });
+
       c.should.eql(channels);
       done();
     });

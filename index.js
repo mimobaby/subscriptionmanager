@@ -23,19 +23,21 @@ var SubscriptionManager = module.exports = function(redis, options) {
   self.redis = redis;
 
   self.redis.on('subscribe', function(channel, count) {
-    debug('subscribe %s (%s remaining)', channel, count);
+    debug('subscribe %s (%s channel)', channel, count);
   });
   
   self.redis.on('unsubscribe', function(channel, count) {
-    debug('unsubscribe %s (%s remaining)', channel, count);
+    debug('unsubscribe %s (%s channel)', channel, count);
   });
 
   self.redis.on('message', function(channel, message) {
     debug('message on %s', channel);
 
-    // unsub checking
+    var subscribers = self._getSubscribers(channel);
 
-    self.emit('message', channel, self.getSubscribers(channel), message);
+    if (subscribers && subscribers.length > 0) {
+      self.emit('message', channel, subscribers, message);  
+    }
   });
 };
 
@@ -90,19 +92,29 @@ SubscriptionManager.prototype.unsubscribe = function(id, channel) {
 
 
 /**
- * Get subscribers to a channel
+ * Get subscribers to a channel. Does not use the specified prefix.
+ *
+ * @param  {String} channel
+ * @return {Array} Array of things
+ */
+SubscriptionManager.prototype._getSubscribers = function(channel) {
+  var subscribers = this.subscriptions[channel];
+  if (!subscribers) return [];
+
+  subscribers = subscribers.map(function(i) { return i.thing; });
+  return subscribers;
+};
+
+
+/**
+ * Get subscribers to a channel. Does not use the specified prefix.
  *
  * @param  {String} channel
  * @return {Array} Array of things
  */
 SubscriptionManager.prototype.getSubscribers = function(channel) {
   channel = this.prefix + channel;
-
-  var subscribers = this.subscriptions[channel];
-  if (!subscribers) return [];
-
-  subscribers = subscribers.map(function(i) { return i.thing; });
-  return subscribers;
+  return this._getSubscribers(channel);
 };
 
 
