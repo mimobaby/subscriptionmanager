@@ -8,7 +8,7 @@ The original idea was to connect WebSocket clients to Pub/Sub channels with even
 
 ## Usage
 
-```
+```javascript
 var redis = require('redis').createClient();
 var SM = require('SubscriptionManager');
 
@@ -47,7 +47,7 @@ Creates a new subscription manager. Possible options include:
 
 - `prefix`: Adds a prefix to your channels
 
-```
+```javascript
 var sm = new SM(redis, {prefix: 'Channel'});
 
 // This will subscribe client to 'Channel:myChannel'
@@ -102,7 +102,7 @@ We're using [debug](https://github.com/visionmedia/debug) for debug output here.
 
 To see what's going on under the hood, set the `DEBUG` environment variable to `SubscriptionManager` when you run node.
 
-```
+```console
 DEBUG=SubscriptionManager node file.js
 
 # --- OR ---
