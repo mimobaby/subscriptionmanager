@@ -7,67 +7,64 @@ var assert = require('assert');
  */
 
 var SubscriptionManager = module.exports = function(redis, options) {
-  assert(redis);
+  assert(redis, 'You must specify a Redis-compatible instance.');
   options = options || {};
 
   this.redis = redis;
-  this.prefix = options.prefix + ':' || '';
   this.subscriptions = {};
+  this.prefix = '';
+
+  if (options.prefix) {
+    this.prefix = options.prefix + ':';
+  }
+  
 };
 
 
 /**
- * Subscribe WebSocket to channel
+ * Subscribe thing to channel
  *
- * Allows us to perform a one-to-many mapping of channels to WebSockets. The
- * return value will be true if this is the first WebSocket subscribed to that
- * channel, otherwise false.
- * 
- * @param  {WebSocket} ws   Socket that is subscribing
- * @param  {String} channel Channel to subscribe to
- * @return {bool}           Is this the first object subscribed?
+ * Allows us to perform a one-to-many mapping of channels to things.
+ *
+ * @param {string} id      Unique id of the thing
+ * @param {Object} thing   Thing that is subscribing
+ * @param {String} channel Channel to subscribe to
  */
 SubscriptionManager.prototype.subscribe = function(id, thing, channel) {
-  var out = false;
+  channel = this.prefix + channel;
 
   if (!this.subscriptions[channel]) {
     this.subscriptions[channel] = [];
-    out = true;
+    this.redis.subscribe(channel);
   }
 
   this.subscriptions[channel].push({id: id, thing: thing});
-
-  return out;
 };
 
 /**
  * Unsubscribe WebSocket to channel
  *
- * Allows us to remove a WebSocket from a list of subscribed WebSockets. The
- * return value will be true if there are other WebSockets listening to the
- * given channel.
+ * Allows us to remove a thing from a list of subscribed things.
  * 
- * @param  {WebSocket} ws   Socket that is unsubscribing
- * @param  {String} channel Channel to subscribe to
- * @return {bool}           Are other objects still listening?
+ * @param {string} id      Unique id of the thing
+ * @param {String} channel Channel to subscribe to
  */
 SubscriptionManager.prototype.unsubscribe = function(id, channel) {
-  var out = true;
+  channel = this.prefix + channel;
   var subscribers = this.subscriptions[channel];
 
   for (var i=subscribers.length-1; i>=0; i--) {
     var subscriber = subscribers[i];
     if (subscriber.id === id) {
       subscribers.splice(i, 1);
+      break;
     }
   }
 
   if (subscribers.length === 0) {
-    out = false;
     delete this.subscriptions[channel];
+    this.redis.unsubscribe(channel);
   }
-
-  return out;
 };
 
 
@@ -75,9 +72,11 @@ SubscriptionManager.prototype.unsubscribe = function(id, channel) {
  * Get subscribers to a channel
  *
  * @param  {String} channel
- * @return {Array} Array of WebSocket objects
+ * @return {Array} Array of things
  */
 SubscriptionManager.prototype.getSubscribers = function(channel) {
+  channel = this.prefix + channel;
+
   var subscribers = this.subscriptions[channel];
   if (!subscribers) return [];
 
@@ -100,6 +99,12 @@ SubscriptionManager.prototype.getChannels = function() {
     if (!this.subscriptions.hasOwnProperty(channel)) { continue; }
     channels.push(channel);
   }
+
+  // Remove prefix
+  var regexp = new RegExp('/^' + this.prefix + '/');
+  channels = channels.map(function(i) {
+    return i.replace(regexp, '');
+  });
 
   return channels;
 };
