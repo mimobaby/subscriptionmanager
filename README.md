@@ -1,6 +1,6 @@
 # Subscription Manager
 
-A handle little tool for subscribing objects to Redis Pub/Sub channels.
+A handy little tool for subscribing objects to Redis Pub/Sub channels.
 
 `npm install subscriptionmanager`
 
