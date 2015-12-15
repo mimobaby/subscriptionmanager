@@ -75,17 +75,19 @@ SubscriptionManager.prototype.unsubscribe = function(thing, channel) {
   channel = this.prefix + channel;
   var subscribers = this.subscriptions[channel];
 
-  for (var i=subscribers.length-1; i>=0; i--) {
-    var subscriber = subscribers[i];
-    if (subscriber === thing) {
-      subscribers.splice(i, 1);
-      break;
+  if (subscribers) {
+    for (var i=subscribers.length-1; i>=0; i--) {
+      var subscriber = subscribers[i];
+      if (subscriber === thing) {
+        subscribers.splice(i, 1);
+        break;
+      }
     }
-  }
 
-  if (subscribers.length === 0) {
-    delete this.subscriptions[channel];
-    this.redis.unsubscribe(channel);
+    if (subscribers.length === 0) {
+      delete this.subscriptions[channel];
+      this.redis.unsubscribe(channel);
+    }
   }
 };
 

@@ -135,6 +135,14 @@ describe('SubscriptionManager', function() {
       checkChannelList(['test2'], done);
     });
 
+    it('should not crash when unsubscribing from an unused channel', function(done) {
+      s = new SubMan(r);
+      s.unsubscribe(obj1, 'test1');
+
+      var subs1 = s.subscriptions.test1;
+      (typeof subs1).should.eql('undefined');
+      return done();
+    });
   });
 
 
